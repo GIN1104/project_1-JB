@@ -9,25 +9,65 @@ function  printSrickerToHTML(){
         createSticker(stickers[i]);
     }
 */
+const LOCAL_STORAGE_KEY = 'stickers';
+// Local Storage helpers
+const localStorageHelpers = {
+    getAll: function(){
+        const rawStickers = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if(rawStickers){
+            return JSON.parse(rawStickers);
+        }else{
+            return [];
+        }
+    },
+    setAll: function(stickers){
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stickers));
+    }
+};
+
+// Storage object
+const stickerStorage = {
+    addSticker: function (stickerModel) {
+        const stickers = localStorageHelpers.getAll();
+        stickers.push(stickerModel);
+        localStorageHelpers.setAll(stickers);
+    },
+    removeSticker: function (stickerModel) {
+        const stickers = localStorageHelpers.getAll();
+        const index = stickers.findIndex(s => s.id === stickerModel.id);
+        if (index > -1) {
+            stickers.splice(index, 1)
+            localStorageHelpers.setAll(stickers);
+        }
+    },
+    getAllStickers: function () {
+        return localStorageHelpers.getAll();
+    }
+};
+function drawAll(){
+    const stickers = stickerStorage.getAllStickers();
+    stickers.forEach(createSticker);
+}
+drawAll();
+
+function createSticker(initialStickerModel) {
+
+    const stickerModel = initialStickerModel || {
+        id: `sticker-${Date.now()}`,
+        task: document.getElementById('task').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value
+    };
 
 
-
-function createSticker() {
-
-    let task = document.getElementById('task').value,
-        date = document.getElementById('date').value,
-        time = document.getElementById('time').value;
-
-
-
-    var sticker = document.createElement('div');
-    sticker.id = 'block';
+    const sticker = document.createElement('div');
+    sticker.id = stickerModel.id;
     sticker.className = 'col-sm-12 sticker';
     document.getElementsByClassName('row')[0].appendChild(sticker);
 
 
-    var closeBtn = document.createElement('button');
-    var glyphIcon = document.createElement('span');
+    const closeBtn = document.createElement('button');
+    const glyphIcon = document.createElement('span');
     closeBtn.className = 'btn ';
     closeBtn.id = 'close';
     sticker.appendChild(closeBtn);
@@ -35,46 +75,31 @@ function createSticker() {
     closeBtn.appendChild(glyphIcon);
     glyphIcon.className = 'glyphicon glyphicon-remove-sign';
 
-
-
     sticker.addEventListener('mouseover', function addCloseBtn() {
         closeBtn.style.display = "block";
 
     });
 
-
-
-
-    var taskArea = document.createElement('textarea');
+    const taskArea = document.createElement('textarea');
     taskArea.className = 'taskArea';
     sticker.appendChild(taskArea);
-    taskArea.innerHTML = task;
+    taskArea.innerHTML = stickerModel.task;
 
-
-    var dateDiv = document.createElement('div');
+    const dateDiv = document.createElement('div');
     dateDiv.className = 'block-1';
     sticker.appendChild(dateDiv);
-    dateDiv.innerHTML = date;
+    dateDiv.innerHTML = stickerModel.date;
 
-
-    var timeDiv = document.createElement('div');
+    const timeDiv = document.createElement('div');
     timeDiv.className = 'block-2';
     sticker.appendChild(timeDiv);
-    timeDiv.innerHTML = time;
+    timeDiv.innerHTML = stickerModel.time;
 
-
-
-
+    if(!initialStickerModel) stickerStorage.addSticker(stickerModel);
     closeBtn.addEventListener('click', function removeSticker() {
-
+        stickerStorage.removeSticker(stickerModel);
         sticker.remove();
-
     })
-
-
-
-
-
 };
 
 
